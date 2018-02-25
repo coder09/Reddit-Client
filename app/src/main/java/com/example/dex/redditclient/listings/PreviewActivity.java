@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -48,11 +50,12 @@ import java.io.OutputStream;
 public class PreviewActivity extends AppCompatActivity {
     private static final String TAG = "PreviewActivity";
     private ProgressBar mProgressBar;
-    private PhotoView photoView;
-    private String imgUrl, videoUrl, mId;
-    private Boolean mGif;
-    private SimpleExoPlayerView exoPlayerView;
-    private SimpleExoPlayer exoPlayer;
+    private PhotoView mPhotoView;
+    private String mImgUrl;
+    private String mId;
+    private SimpleExoPlayerView mExoplayerView;
+    private SimpleExoPlayer mExoplayer;
+    private WebView mWebView;
 
 
     @Override
@@ -61,49 +64,28 @@ public class PreviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_preview);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-
+        // Getting write permission from user
         ActivityCompat.requestPermissions(PreviewActivity.this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 
-
-        photoView = findViewById(R.id.photo_view);
+        mWebView = findViewById(R.id.webview);
+        mPhotoView = findViewById(R.id.photo_view);
         mProgressBar = findViewById(R.id.preview_progressbar);
-        exoPlayerView = findViewById(R.id.mExoPlayer);
+        mExoplayerView = findViewById(R.id.mExoPlayer);
 
         // Getting Intent
         Intent previewIntent = getIntent();
-        imgUrl = previewIntent.getStringExtra("mImageUrl");
+        mImgUrl = previewIntent.getStringExtra("mImageUrl");
         mId = previewIntent.getStringExtra("mId");
+        String mSubreddit = previewIntent.getStringExtra("mSubreddit");
+        getSupportActionBar().setTitle("/r/" + mSubreddit);
 
-        if (isValidImageUrl(imgUrl)) {
-            showPicture(imgUrl);
+        if (isValidImageUrl(mImgUrl)) {
+            showPicture(mImgUrl);
         } else {
-            videoUrl = previewIntent.getStringExtra("mVideoUrl");
-            mGif = previewIntent.getBooleanExtra("isGif", false);
-
-
-            showGif(videoUrl);
+            String mVideoUrl = previewIntent.getStringExtra("mVideoUrl");
+            showGif(mVideoUrl);
         }
-
-
-//
-//        if (!mGif) {
-//
-//            showPicture(imgUrl);
-//
-//        } else {
-//            showGif(videoUrl);
-//        }
-
-
-//        } else {
-//
-//            mProgressBar.setVisibility(View.GONE);
-//            photoView.setVisibility(View.VISIBLE);
-//            Toast.makeText(this, "Unable to load ", Toast.LENGTH_SHORT).show();
-//        }
-
-
     }
 
     private boolean isValidImageUrl(String thumbnail) {
@@ -112,11 +94,12 @@ public class PreviewActivity extends AppCompatActivity {
 
     private void showGif(String videoUrl) {
         try {
-            exoPlayerView.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.GONE);
+            mExoplayerView.setVisibility(View.VISIBLE);
             BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
             TrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(bandwidthMeter));
 
-            exoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
+            mExoplayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
 
             Uri videoURI = Uri.parse(videoUrl);
 
@@ -124,28 +107,53 @@ public class PreviewActivity extends AppCompatActivity {
             ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
             MediaSource mediaSource = new ExtractorMediaSource(videoURI, dataSourceFactory, extractorsFactory, null, null);
 
-            exoPlayerView.setPlayer(exoPlayer);
-            exoPlayer.prepare(mediaSource);
-            exoPlayer.setPlayWhenReady(true);
-            exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
+            mExoplayerView.setPlayer(mExoplayer);
+            mExoplayer.prepare(mediaSource);
+            mExoplayer.setPlayWhenReady(true);
+            mExoplayer.setRepeatMode(Player.REPEAT_MODE_ALL);
 
         } catch (Exception e) {
             Log.e(TAG, "Preview Activity: " + e.getMessage());
         }
     }
 
-    private void showPicture(String imgUrl) {
+    private void showPicture(final String imgUrl) {
+        Log.d(TAG, "onCreate: Received url: " + mImgUrl);
         mProgressBar.setVisibility(View.GONE);
-        photoView.setVisibility(View.VISIBLE);
+        mPhotoView.setVisibility(View.VISIBLE);
 
         Glide.with(PreviewActivity.this)
                 .load(imgUrl)
                 .asBitmap()
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .listener(new RequestListener<String, Bitmap>() {
                     @Override
                     public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
-                        mProgressBar.setVisibility(View.GONE);
+//                        mProgressBar.setVisibility(View.GONE);
+//                        Toast.makeText(PreviewActivity.this, "Unable to load!", Toast.LENGTH_SHORT).show();
+
+                        mWebView.setVisibility(View.VISIBLE);
+                        mProgressBar.setVisibility(View.VISIBLE);
+
+//                        mWebView.getSettings().setJavaScriptEnabled(true);
+                        Log.d(TAG, "onCreate: Received url: " + mImgUrl);
+
+                        mWebView.setWebViewClient(new WebViewClient());
+                        mWebView.getSettings().setDomStorageEnabled(true);
+                        mWebView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
+
+                        mWebView.loadUrl(String.valueOf(imgUrl));
+
+                        mWebView.setHorizontalScrollBarEnabled(false);
+
+                        mWebView.setWebViewClient(new WebViewClient() {
+
+                            @Override
+                            public void onPageCommitVisible(WebView view, String url) {
+                                mProgressBar.setVisibility(View.GONE);
+                            }
+                        });
+
                         return false;
                     }
 
@@ -155,14 +163,15 @@ public class PreviewActivity extends AppCompatActivity {
                         return false;
                     }
                 })
-                .into(photoView);
-
+                .into(mPhotoView);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.menu_preview, menu);
+
         return true;
     }
 
@@ -171,7 +180,6 @@ public class PreviewActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         switch (id) {
-
             case R.id.action_download:
                 download_image();
                 break;
@@ -181,9 +189,10 @@ public class PreviewActivity extends AppCompatActivity {
 //                startActivity(intent);
 //                break;
 
-
             case R.id.home:
+
                 NavUtils.navigateUpFromSameTask(this);
+                finish();
                 return true;
 
         }
@@ -192,7 +201,7 @@ public class PreviewActivity extends AppCompatActivity {
 
     private void download_image() {
         Glide.with(PreviewActivity.this)
-                .load(imgUrl)
+                .load(mImgUrl)
                 .asBitmap()
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
@@ -261,6 +270,19 @@ public class PreviewActivity extends AppCompatActivity {
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         sendBroadcast(mediaScanIntent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+
+//        if (mExoplayerView.hasWindowFocus()) {
+//            mExoplayerView.
+//        } else {
+//            finish();
+//
+//        }
     }
 }
 

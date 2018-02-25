@@ -51,7 +51,11 @@ public class LChildData {
 
     @SerializedName("created")
     @Expose
-    public String created;
+    public long created;
+
+    @SerializedName("url")
+    @Expose
+    public String url;
 
 
     @SerializedName("preview")

@@ -1,4 +1,4 @@
-package com.example.dex.redditclient.listings;
+package com.example.dex.redditclient.listings.adapter;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
@@ -6,7 +6,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.dex.redditclient.R;
-import com.example.dex.redditclient.RetrofitHelper;
+import com.example.dex.redditclient.listings.ListFragment;
+import com.example.dex.redditclient.utils.RetrofitHelper;
 
 /**
  * Created by dex on 2/2/18.

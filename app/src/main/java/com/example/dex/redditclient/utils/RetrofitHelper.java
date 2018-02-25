@@ -1,4 +1,4 @@
-package com.example.dex.redditclient;
+package com.example.dex.redditclient.utils;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +18,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class RetrofitHelper {
-
     public static final String DOWNLOAD_COMPLETE = "download_complete";
     public static final String DOWNLOAD_COMMENTS_COMPLETE = "download_comments_complete";
     private static final String BASE_URL = "http://www.reddit.com/";
@@ -56,14 +55,15 @@ public class RetrofitHelper {
 
     private void enqueueCall(Call<LResult> call) {
 
-
         call.enqueue(new Callback<LResult>() {
             @Override
             public void onResponse(Call<LResult> call, Response<LResult> response) {
                 if (response.body() != null) {
+
                     mResult = response.body();
                     prevSubReddit = mSubreddit;
                 } else {
+
                     mSubreddit = prevSubReddit;
                     Toast.makeText(mContext, "No results for this search term!", Toast.LENGTH_SHORT).show();
                 }

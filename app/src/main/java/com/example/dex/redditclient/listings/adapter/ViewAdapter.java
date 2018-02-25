@@ -1,4 +1,4 @@
-package com.example.dex.redditclient.listings;
+package com.example.dex.redditclient.listings.adapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +18,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.dex.redditclient.R;
+import com.example.dex.redditclient.listings.GetTimeAgo;
+import com.example.dex.redditclient.listings.PreviewActivity;
 import com.example.dex.redditclient.listings.model.LChild;
 
 import java.util.List;
@@ -27,13 +29,12 @@ import java.util.List;
  * View adapter for each item in home screen.
  */
 
-class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
+public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
     private static final String TAG = "ViewAdapter";
     private final List<LChild> mValues;
     private Context mContext;
 
-    ViewAdapter(List<LChild> items, Context context) {
-
+    public ViewAdapter(List<LChild> items, Context context) {
         mValues = items;
         mContext = context;
     }
@@ -48,44 +49,78 @@ class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+
         holder.mItem = mValues.get(position);
 
         try {
+            Log.d(TAG, "Title: " + holder.mItem.data.title + ",\n position: " + position);
 
             holder.mPostTitle.setText(holder.mItem.data.title);
             holder.mPostUps.setText(holder.mItem.data.ups);
-            holder.mPostTime.setText(holder.mItem.data.created);
-            holder.mPostSource.setText(holder.mItem.data.domain);
+            holder.mPostDomain.setText(holder.mItem.data.domain);
             holder.mPostSubreddit.setText(holder.mItem.data.subreddit);
+
+            Long postTime = holder.mItem.data.created;
+
+            String postCreatedTime = GetTimeAgo.getTimeAgo(postTime, mContext);
+
+            holder.mPostTime.setText(postCreatedTime);
+
 
             final String mThumbnail = holder.mItem.data.thumbnail;
 
+            final String mUrl = holder.mItem.data.url;
+
             final String mImageUrl = holder.mItem.data.preview.getImages().get(0).getSource().getUrl();
 
-            if (isValidImageUrl(mImageUrl)) {
 
-                final String id = holder.mItem.data.id;
-                holder.mProgressBar.setVisibility(View.VISIBLE);
+            if (mThumbnail.equals("") || mThumbnail.equals("self")) {
+
+                holder.mProgressBar.setVisibility(View.GONE);
+                holder.mErrorThumbnail.setVisibility(View.VISIBLE);
 
                 Glide.with(mContext)
-                        .load(mImageUrl)
+                        .load(R.drawable.reddit)
+                        .into(holder.mErrorThumbnail);
+
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
+                        Context context = v.getContext();
+                        Intent previewIntent = new Intent(context, PreviewActivity.class);
+                        previewIntent.putExtra("mImageUrl", mUrl);
+                        previewIntent.putExtra("mSubreddit", holder.mItem.data.subreddit);
+                        context.startActivity(previewIntent);
+
+                    }
+                });
+
+
+            } else {
+
+                final String resultImageUrl = mImageUrl.replace("&amp;", "&");
+
+                final String id = holder.mItem.data.id;
+
+                holder.mProgressBar.setVisibility(View.VISIBLE);
+                holder.mPostThumbnail.setVisibility(View.VISIBLE);
+//                holder.mErrorThumbnail.setVisibility(View.GONE);
+
+                Glide.with(mContext)
+                        .load(resultImageUrl)
                         .asBitmap()
-                        .error(R.drawable.reddit)
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
                         .listener(new RequestListener<String, Bitmap>() {
                             @Override
                             public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
                                 holder.mProgressBar.setVisibility(View.GONE);
-                                Glide.with(mContext)
-                                        .load(mThumbnail)
-                                        .into(holder.mPostThumbnail);
                                 return false;
                             }
 
                             @Override
                             public boolean onResourceReady(Bitmap resource, String model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
                                 holder.mProgressBar.setVisibility(View.GONE);
-
                                 return false;
                             }
                         })
@@ -98,54 +133,66 @@ class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                         holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
                         Context context = v.getContext();
                         Intent previewIntent = new Intent(context, PreviewActivity.class);
-
-                        previewIntent.putExtra("mImageUrl", mImageUrl);
+//                        previewIntent.putExtra("mVideoUrl", mVideoUrl);
                         previewIntent.putExtra("mId", id);
-
+                        previewIntent.putExtra("mImageUrl", resultImageUrl);
+                        previewIntent.putExtra("mSubreddit", holder.mItem.data.subreddit);
                         context.startActivity(previewIntent);
                     }
                 });
+
+
             }
 
             try {
+//                Log.d(TAG, "onBindViewHolder: video block called");
                 final String id = holder.mItem.data.id;
 
                 final String mVideoUrl = holder.mItem.data.preview.reddit_video_preview.fallback_url;
 
-                final boolean isGif = holder.mItem.data.preview.reddit_video_preview.is_gif;
+//                final boolean isGif = holder.mItem.data.preview.reddit_video_preview.is_gif;
 
-                if (isGif) {
-                    holder.mView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
-                            Context context = v.getContext();
-                            Intent previewIntent = new Intent(context, PreviewActivity.class);
-                            previewIntent.putExtra("mVideoUrl", mVideoUrl);
-                            previewIntent.putExtra("mId", id);
-                            context.startActivity(previewIntent);
-                        }
-                    });
+//                if (isGif) {
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
+                        Context context = v.getContext();
+                        Intent previewIntent = new Intent(context, PreviewActivity.class);
+                        previewIntent.putExtra("mVideoUrl", mVideoUrl);
+                        previewIntent.putExtra("mId", id);
+                        previewIntent.putExtra("mSubreddit", holder.mItem.data.subreddit);
+                        context.startActivity(previewIntent);
+                    }
+                });
 
-                }
+//                }
 
 
             } catch (NullPointerException e) {
-                Log.d(TAG, "onBindViewHolder: " + e.getMessage());
+//                Log.d(TAG, "onBindViewHolder: " + e.getMessage());
 
             }
 
 
         } catch (NullPointerException e) {
-            Log.d(TAG, "onBindViewHolder: ImageUrl ERROR :" + e.getMessage());
-            holder.mProgressBar.setVisibility(View.GONE);
-            holder.mPostThumbnail.setVisibility(View.GONE);
+//            Log.d(TAG, "onBindViewHolder: ImageUrl ERROR :" + e.getMessage());
         }
     }
 
-    private boolean isValidImageUrl(String thumbnail) {
-        return thumbnail != null && !thumbnail.isEmpty() && thumbnail.startsWith("http");
-    }
+//    private void ValidateImageUrl(String thumbnail) {
+//        String resultUrl = thumbnail.replace("&amp;", "&");
+//        Log.d(TAG, "isValidImageUrl: originalUrl: " + thumbnail);
+//        Log.d(TAG, "isValidImageUrl: resultUrl: " + resultUrl);
+//    }
+
+//    private boolean isValidImageUrl(String thumbnail) {
+//        return thumbnail != null && !thumbnail.isEmpty() && thumbnail.startsWith("http");
+//    }
+
+//    private boolean isGif(String url) {
+//        return url.endsWith(".gifv") || url.endsWith(".gif");
+//    }
 
     @Override
     public int getItemCount() {
@@ -154,28 +201,30 @@ class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private final View mView;
-
+        GetTimeAgo getTimeAgo;
         private ImageView mPostThumbnail;
+        private ImageView mErrorThumbnail;
         private TextView mPostTitle;
         private TextView mPostUps;
         private TextView mPostTime;
-        private TextView mPostSource;
+        private TextView mPostDomain;
         private TextView mPostSubreddit;
         private ProgressBar mProgressBar;
-
         private LChild mItem;
 
         ViewHolder(View view) {
             super(view);
             mView = view;
 
+            getTimeAgo = new GetTimeAgo();
             mPostThumbnail = view.findViewById(R.id.postThumbnail);
             mPostTitle = view.findViewById(R.id.post_title);
             mPostUps = view.findViewById(R.id.post_ups);
             mPostTime = view.findViewById(R.id.post_time);
-            mPostSource = view.findViewById(R.id.post_imageSource);
+            mPostDomain = view.findViewById(R.id.post_imageSource);
             mPostSubreddit = view.findViewById(R.id.post_subreddit);
             mProgressBar = view.findViewById(R.id.post_ImageProgress);
+            mErrorThumbnail = view.findViewById(R.id.iv_error_image);
         }
     }
 }

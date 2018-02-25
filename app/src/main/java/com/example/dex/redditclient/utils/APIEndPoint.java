@@ -1,4 +1,4 @@
-package com.example.dex.redditclient;
+package com.example.dex.redditclient.utils;
 
 import com.example.dex.redditclient.listings.model.LResult;
 

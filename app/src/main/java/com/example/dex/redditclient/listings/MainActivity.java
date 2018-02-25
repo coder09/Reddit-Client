@@ -1,6 +1,7 @@
 package com.example.dex.redditclient.listings;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -8,9 +9,12 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +22,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -25,20 +30,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.dex.redditclient.R;
-import com.example.dex.redditclient.RetrofitHelper;
-import com.example.dex.redditclient.listings.model.SubredditList;
+import com.example.dex.redditclient.listings.adapter.SectionAdapter;
+import com.example.dex.redditclient.utils.RetrofitHelper;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
-public class Home extends AppCompatActivity
+public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    private static final String TAG = "Home";
-
-
+    private static final String TAG = "MainActivity";
     private RetrofitHelper mRetroHelper;
-    //    private String mQuery = "popular";
+    //    private String mQuery = "popular"
     private SearchView searchView;
-
     private EditText et_subreddit;
     private ImageView et_clear, btnSearch;
     private ListView mDrawerList;
@@ -46,11 +48,17 @@ public class Home extends AppCompatActivity
     private String feedName;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        init();
+    }
+
+
+    private void init() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -64,56 +72,93 @@ public class Home extends AppCompatActivity
         mViewPager.setAdapter(mSectionAdapter);
 //        handleIntent(getIntent());
 
-        //Static call for subreddit
+        //static subreddit string
         mRetroHelper.download(currentFeed);
-
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Nav drawer listItems
-        View headerview = navigationView.getHeaderView(0);
+        // Navigation Drawer
+//        View headerview = navigationView.getHeaderView(0);
         et_subreddit = findViewById(R.id.etSubreddit);
         et_clear = findViewById(R.id.btnclose);
         btnSearch = findViewById(R.id.btnSearch);
 
+        //-----------------------------------------------------
 
-        // Construct the data source
-        final ArrayList<SubredditList> subredditLists = new ArrayList<SubredditList>();
+        final String[] listViewAdapterContent = {"popular",
+                "pics",
+                "earth",
+                "cats",
+                "food",
+                "art",
+                "ask",
+                "cars",
+                "movies",
+                "music",
+                "actress",
+                "anime",
+                "lifehacks",
+                "gifs",
+                "humor"};
 
-        // Create the adapter to convert the array to views
-        final NavListAdapter adapter = new NavListAdapter(this, subredditLists);
+        Arrays.sort(listViewAdapterContent);
+
+        listAdapter = new ArrayAdapter<String>(this, R.layout.nav_listitems, R.id.nav_tvlist, listViewAdapterContent);
+
+//        // Construct the data source
+//        final ArrayList<SubredditList> arrayList = new ArrayList<SubredditList>();
+//
+//        // Create the adapter to convert the array to views
+//        final NavListAdapter adapter = new NavListAdapter(this, arrayList);
 
         // Attach the adapter to a ListView
         mDrawerList = findViewById(R.id.list_view);
-        mDrawerList.setHeaderDividersEnabled(true);
-        mDrawerList.setFooterDividersEnabled(true);
-        mDrawerList.setTextFilterEnabled(true);
+//        mDrawerList.setHeaderDividersEnabled(true);
+//        mDrawerList.setFooterDividersEnabled(true);
+//        mDrawerList.setTextFilterEnabled(true);
 
-        mDrawerList.setAdapter(adapter);
+//        mDrawerList.setAdapter(adapter);
 
-        subredditLists.add(new SubredditList("ask"));
-        subredditLists.add(new SubredditList("pic"));
-        subredditLists.add(new SubredditList("funny"));
-        subredditLists.add(new SubredditList("cats"));
-        subredditLists.add(new SubredditList("cars"));
-        subredditLists.add(new SubredditList("dogs"));
-        subredditLists.add(new SubredditList("gifs"));
 
+        mDrawerList.setAdapter(listAdapter);
+//        String[] subList = {"popular","earth"};
+//        arrayList.add(new SubredditList(subList));
+
+
+//
+//        arrayList.add(new SubredditList("popular"));
+//        arrayList.add(new SubredditList("earth"));
+//        arrayList.add(new SubredditList("science"));
+//        arrayList.add(new SubredditList("movies"));
+//        arrayList.add(new SubredditList("music"));
+//        arrayList.add(new SubredditList("humor"));
+//        arrayList.add(new SubredditList("Art"));
+//        arrayList.add(new SubredditList("lifehacks"));
+//        arrayList.add(new SubredditList("ask"));
+//        arrayList.add(new SubredditList("pics"));
+//        arrayList.add(new SubredditList("actress"));
+//        arrayList.add(new SubredditList("funny"));
+//        arrayList.add(new SubredditList("cats"));
+//        arrayList.add(new SubredditList("cars"));
+//        arrayList.add(new SubredditList("dogs"));
+//        arrayList.add(new SubredditList("gifs"));
+//        arrayList.add(new SubredditList("nsfw"));
+//
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                TextView mSubList = view.findViewById(R.id.nav_tvlist);
-                String feedName = mSubList.getText().toString();
+                TextView nav_list_text = view.findViewById(R.id.nav_tvlist);
+                String feedName = nav_list_text.getText().toString();
 
-//                Log.d(TAG, "onItemClick: " + feedName);
                 if (!feedName.equals("")) {
                     currentFeed = feedName;
                     downloadPost(currentFeed);
@@ -122,31 +167,52 @@ public class Home extends AppCompatActivity
                 }
                 hideSoftKeyboard();
 
-//                Log.d(TAG, "onClick: button " + feedName);
-
                 DrawerLayout drawer = findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
 
 
-        mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
-
-        mSwipeRefreshLayout.setColorScheme(
-                android.R.color.holo_green_dark,
-                android.R.color.holo_red_dark,
-                android.R.color.holo_blue_dark,
-                android.R.color.holo_orange_dark
-
-        );
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        et_subreddit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onRefresh() {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-                downloadPost(currentFeed);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                MainActivity.this.listAdapter.getFilter().filter(s);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String result = s.toString().replaceAll(" ", "");
+                if (!s.toString().equals(result)) {
+                    et_subreddit.setText(result);
+                    et_subreddit.setSelection(result.length());
+                }
 
             }
         });
+
+
+//        mSwipeRefreshLayout = findViewById(R.id.swiperefresh);
+//
+//        mSwipeRefreshLayout.setColorScheme(
+//                android.R.color.holo_green_dark,
+//                android.R.color.holo_red_dark,
+//                android.R.color.holo_blue_dark,
+//                android.R.color.holo_orange_dark
+//
+//        );
+//        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//
+//                downloadPost(currentFeed);
+//
+//            }
+//        });
 
         et_clear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,18 +248,16 @@ public class Home extends AppCompatActivity
             }
         });
 
-
     }
 
     private void downloadPost(String currentFeed) {
-
-        mSwipeRefreshLayout.setRefreshing(false);
 
         mRetroHelper.download(currentFeed);
 
     }
 
     private void hideSoftKeyboard() {
+
         View view = this.getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -233,13 +297,12 @@ public class Home extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            userExit();
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -254,9 +317,7 @@ public class Home extends AppCompatActivity
 
         if (id == R.id.action_refresh) {
             Toast.makeText(this, "Refresh Clicked", Toast.LENGTH_SHORT).show();
-            mSwipeRefreshLayout.setRefreshing(true);
             downloadPost(currentFeed);
-
 
         }
 
@@ -266,11 +327,25 @@ public class Home extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    private void userExit() {
+        new AlertDialog.Builder(this)
+                .setTitle("Quit")
+                .setMessage("Really quit?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        MainActivity.this.finish();
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
+
 }

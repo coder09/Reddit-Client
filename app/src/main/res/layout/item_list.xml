@@ -1,73 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/swiperefresh"
+<!--<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"--><!--xmlns:app="http://schemas.android.com/apk/res-auto"--><!--xmlns:tools="http://schemas.android.com/tools"--><!--android:id="@+id/swiperefresh"--><!--android:layout_width="match_parent"--><!--android:layout_height="match_parent"--><!--app:layout_behavior="@string/appbar_scrolling_view_behavior"--><!--tools:contecom.example.dex.redditclient.listings.MainActivityActivityHome"--><!--tools:showIn="@layout/app_bar_main">-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.dex.redditclient.listings.Home"
-    tools:showIn="@layout/app_bar_main">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/item"
+        android:orientation="vertical">
 
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/item_list"
+            android:name="anindya.redditapi.ListFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/item"
-            android:orientation="vertical">
+            android:layout_height="0dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight="9"
+            android:clipToPadding="true"
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/item_list"
-                android:name="anindya.redditapi.ListFragment"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="9"
-                app:layoutManager="LinearLayoutManager"
-                tools:context="anindya.redditapi.listings.Home"
-                tools:listitem="@layout/item_list_content" />
+            tools:context="anindya.redditapi.listings.Home"
+            tools:listitem="@layout/item_list_content" />
 
-            <!--<LinearLayout-->
-            <!--android:id="@+id/pagination"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="0dp"-->
-            <!--android:layout_weight="1">-->
+        <!--<LinearLayout-->
+        <!--android:id="@+id/pagination"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0dp"-->
+        <!--app:layout_scrollFlags="scroll|exitUntilCollapsed"-->
+        <!--android:layout_weight="1">-->
 
-            <!--<Button-->
-            <!--android:id="@+id/prev"-->
-            <!--style="@style/Buttons"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_weight="1"-->
-            <!--android:text="@string/prev" />-->
+        <!--<Button-->
+        <!--android:id="@+id/prev"-->
+        <!--style="@style/Buttons"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_weight="1"-->
+        <!--android:text="@string/prev" />-->
 
-            <!--<Button-->
-            <!--android:id="@+id/next"-->
-            <!--style="@style/Buttons"-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_weight="1"-->
-            <!--android:text="@string/next" />-->
+        <!--<Button-->
+        <!--android:id="@+id/next"-->
+        <!--style="@style/Buttons"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_weight="1"-->
+        <!--android:text="@string/next" />-->
 
-            <!--</LinearLayout>-->
+        <!--</LinearLayout>-->
 
 
-        </LinearLayout>
+    </LinearLayout>
 
-        <ProgressBar
-            android:id="@+id/post_progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:visibility="gone" />
+    <ProgressBar
+        android:id="@+id/post_progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
-    </RelativeLayout>
+</RelativeLayout>
 
 
-</android.support.v4.widget.SwipeRefreshLayout>
+    <!--</android.support.v4.widget.SwipeRefreshLayout>-->
 

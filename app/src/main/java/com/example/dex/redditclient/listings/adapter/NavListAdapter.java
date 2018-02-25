@@ -1,4 +1,4 @@
-package com.example.dex.redditclient.listings;
+package com.example.dex.redditclient.listings.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

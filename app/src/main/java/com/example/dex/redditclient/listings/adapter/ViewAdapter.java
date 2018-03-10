@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,59 +55,54 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
         holder.mItem = mValues.get(position);
 
         try {
-            Log.d(TAG, "Title: " + holder.mItem.data.title + ",\n position: " + position);
-
-            holder.mPostTitle.setText(holder.mItem.data.title);
+//            Log.d(TAG, "Title: " + holder.mItem.data.title + ",\n position: " + position);
             holder.mPostUps.setText(holder.mItem.data.ups);
             holder.mPostDomain.setText(holder.mItem.data.domain);
             holder.mPostSubreddit.setText(holder.mItem.data.subreddit);
 
+            // Time conversion
             Long postTime = holder.mItem.data.created;
-
             String postCreatedTime = GetTimeAgo.getTimeAgo(postTime, mContext);
-
             holder.mPostTime.setText(postCreatedTime);
 
 
+            final String mTitle = holder.mItem.data.title;
+            holder.mPostTitle.setText(mTitle);
             final String mThumbnail = holder.mItem.data.thumbnail;
-
             final String mUrl = holder.mItem.data.url;
 
-            final String mImageUrl = holder.mItem.data.preview.getImages().get(0).getSource().getUrl();
-
-
-            if (mThumbnail.equals("") || mThumbnail.equals("self")) {
+            //Handling post with no thumbnail.
+            if (mThumbnail.isEmpty() || mThumbnail.equals("self") || mThumbnail.equals("default")) {
 
                 holder.mProgressBar.setVisibility(View.GONE);
                 holder.mErrorThumbnail.setVisibility(View.VISIBLE);
-
-                Glide.with(mContext)
-                        .load(R.drawable.reddit)
-                        .into(holder.mErrorThumbnail);
+                holder.mErrorThumbnail.setImageResource(R.drawable.reddit);
 
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
                         Context context = v.getContext();
-                        Intent previewIntent = new Intent(context, PreviewActivity.class);
-                        previewIntent.putExtra("mImageUrl", mUrl);
-                        previewIntent.putExtra("mSubreddit", holder.mItem.data.subreddit);
-                        context.startActivity(previewIntent);
-
+                        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                        CustomTabsIntent customTabsIntent = builder.build();
+                        customTabsIntent.intent.setPackage("com.android.chrome");
+                        customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        customTabsIntent.launchUrl(context, Uri.parse(mUrl));
                     }
                 });
 
 
             } else {
 
+                holder.mErrorThumbnail.setVisibility(View.GONE);
+
+                final String mImageUrl = holder.mItem.data.preview.getImages().get(0).getSource().getUrl();
+
                 final String resultImageUrl = mImageUrl.replace("&amp;", "&");
 
-                final String id = holder.mItem.data.id;
-
                 holder.mProgressBar.setVisibility(View.VISIBLE);
+                holder.mErrorThumbnail.setVisibility(View.GONE);
                 holder.mPostThumbnail.setVisibility(View.VISIBLE);
-//                holder.mErrorThumbnail.setVisibility(View.GONE);
 
                 Glide.with(mContext)
                         .load(resultImageUrl)
@@ -130,18 +127,16 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
+                        holder.mPostTitle.setTextColor(Color.parseColor("#AEEA00"));
                         Context context = v.getContext();
                         Intent previewIntent = new Intent(context, PreviewActivity.class);
 //                        previewIntent.putExtra("mVideoUrl", mVideoUrl);
-                        previewIntent.putExtra("mId", id);
-                        previewIntent.putExtra("mImageUrl", resultImageUrl);
-                        previewIntent.putExtra("mSubreddit", holder.mItem.data.subreddit);
+//                        previewIntent.putExtra("mId", id);
+                        previewIntent.putExtra("Url", resultImageUrl);
+                        previewIntent.putExtra("Subreddit", holder.mItem.data.subreddit);
                         context.startActivity(previewIntent);
                     }
                 });
-
-
             }
 
             try {
@@ -156,7 +151,7 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
+                        holder.mPostTitle.setTextColor(Color.parseColor("#AEEA00"));
                         Context context = v.getContext();
                         Intent previewIntent = new Intent(context, PreviewActivity.class);
                         previewIntent.putExtra("mVideoUrl", mVideoUrl);
@@ -166,38 +161,23 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                     }
                 });
 
-//                }
-
-
             } catch (NullPointerException e) {
-//                Log.d(TAG, "onBindViewHolder: " + e.getMessage());
+                Log.d(TAG, "onBindViewHolder: VideoUrl Error :" + e.getMessage());
 
             }
 
 
         } catch (NullPointerException e) {
-//            Log.d(TAG, "onBindViewHolder: ImageUrl ERROR :" + e.getMessage());
+            Log.d(TAG, "onBindViewHolder: ImageUrl ERROR :" + e.getMessage());
         }
     }
-
-//    private void ValidateImageUrl(String thumbnail) {
-//        String resultUrl = thumbnail.replace("&amp;", "&");
-//        Log.d(TAG, "isValidImageUrl: originalUrl: " + thumbnail);
-//        Log.d(TAG, "isValidImageUrl: resultUrl: " + resultUrl);
-//    }
-
-//    private boolean isValidImageUrl(String thumbnail) {
-//        return thumbnail != null && !thumbnail.isEmpty() && thumbnail.startsWith("http");
-//    }
-
-//    private boolean isGif(String url) {
-//        return url.endsWith(".gifv") || url.endsWith(".gif");
-//    }
 
     @Override
     public int getItemCount() {
         return mValues.size();
     }
+
+
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private final View mView;

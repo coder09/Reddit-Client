@@ -9,7 +9,7 @@
     android:layout_marginEnd="8dp"
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
-    card_view:cardCornerRadius="2dp"
+    card_view:cardCornerRadius="5dp"
     card_view:cardElevation="4dp"
     card_view:cardMaxElevation="10dp">
 

@@ -7,6 +7,7 @@ package com.example.dex.redditclient.listings.model;
 public class SubredditList {
     public String name;
 
+
     public SubredditList(String name) {
 
         this.name = name;

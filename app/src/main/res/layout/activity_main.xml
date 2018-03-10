@@ -36,7 +36,7 @@
                 android:weightSum="100">
 
                 <EditText
-                    android:id="@+id/etSubreddit"
+                    android:id="@+id/et_subreddit"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="80"
@@ -52,7 +52,7 @@
                     android:textSize="20sp" />
 
                 <ImageView
-                    android:id="@+id/btnclose"
+                    android:id="@+id/btn_close"
                     android:layout_width="0dp"
                     android:layout_height="35dp"
                     android:layout_gravity="center_vertical"
@@ -60,7 +60,7 @@
                     android:src="@drawable/ic_close" />
 
                 <ImageView
-                    android:id="@+id/btnSearch"
+                    android:id="@+id/btn_search"
                     android:layout_width="0dp"
                     android:layout_height="35dp"
                     android:layout_gravity="center_vertical"
@@ -70,19 +70,20 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/list_textview"
+                android:id="@+id/tv_navigation_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="10dp"
                 android:textSize="30sp" />
 
             <ListView
-                android:id="@+id/list_view"
+                android:id="@+id/lv_navigation_bar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/nav_layout1"
                 android:divider="#757575"
                 android:dividerHeight="1dp"
+                android:listSelector="#263238"
                 android:nestedScrollingEnabled="true">
 
             </ListView>

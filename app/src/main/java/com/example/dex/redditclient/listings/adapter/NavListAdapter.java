@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.dex.redditclient.R;
@@ -19,45 +20,31 @@ import java.util.ArrayList;
  */
 public class NavListAdapter extends ArrayAdapter<SubredditList> {
 
-    private Context mContext;
 
-
-    public NavListAdapter(@NonNull Context context, ArrayList<SubredditList> mList) {
-        super(context, R.layout.nav_listitems, mList);
+    public NavListAdapter(@NonNull Context context, ArrayList<SubredditList> list_item) {
+        super(context, 0, list_item);
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        SubredditList subredditList = getItem(position);
-
-        ViewHolder viewHolder;
-
+        SubredditList sub_list = getItem(position);
 
         if (convertView == null) {
-            viewHolder = new ViewHolder();
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.nav_listitems, parent, false);
 
-            viewHolder.title = convertView.findViewById(R.id.nav_tvlist);
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(R.layout.nav_listitems, parent, false);
 
-            // Cache the viewHolder object inside the fresh view
-            convertView.setTag(viewHolder);
-
-        } else {
-            // View is being recycled, retrieve the viewHolder object from tag
-            viewHolder = (ViewHolder) convertView.getTag();
         }
-        viewHolder.title.setText(subredditList.name);
+
+        TextView tvName = convertView.findViewById(R.id.nav_tvlist);
+        ImageView iv_rating = convertView.findViewById(R.id.iv_rating);
+
+        tvName.setText(sub_list.name);
 
 
         return convertView;
     }
 
-    private static class ViewHolder {
-
-        TextView title;
-
-
-    }
 }

@@ -13,8 +13,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -40,6 +38,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,7 +54,6 @@ public class PreviewActivity extends AppCompatActivity {
     private String mId;
     private SimpleExoPlayerView mExoplayerView;
     private SimpleExoPlayer mExoplayer;
-    private WebView mWebView;
 
 
     @Override
@@ -68,16 +66,15 @@ public class PreviewActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(PreviewActivity.this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 
-        mWebView = findViewById(R.id.webview);
         mPhotoView = findViewById(R.id.photo_view);
         mProgressBar = findViewById(R.id.preview_progressbar);
         mExoplayerView = findViewById(R.id.mExoPlayer);
 
         // Getting Intent
         Intent previewIntent = getIntent();
-        mImgUrl = previewIntent.getStringExtra("mImageUrl");
+        mImgUrl = previewIntent.getStringExtra("Url");
         mId = previewIntent.getStringExtra("mId");
-        String mSubreddit = previewIntent.getStringExtra("mSubreddit");
+        String mSubreddit = previewIntent.getStringExtra("Subreddit");
         getSupportActionBar().setTitle("/r/" + mSubreddit);
 
         if (isValidImageUrl(mImgUrl)) {
@@ -103,7 +100,7 @@ public class PreviewActivity extends AppCompatActivity {
 
             Uri videoURI = Uri.parse(videoUrl);
 
-            DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("exoplayer_video");
+            DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("exop`layer_video");
             ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
             MediaSource mediaSource = new ExtractorMediaSource(videoURI, dataSourceFactory, extractorsFactory, null, null);
 
@@ -117,9 +114,38 @@ public class PreviewActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause: called");
+        super.onPause();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
+    }
+
+    private void releasePlayer() {
+        Log.d(TAG, "releasePlayer: called");
+        if (mExoplayer != null) {
+//            playbackPosition = player.getCurrentPosition();
+//            currentWindow = player.getCurrentWindowIndex();
+//            playWhenReady = player.getPlayWhenReady();
+            mExoplayer.release();
+            mExoplayer = null;
+        }
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "onStop: called");
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
+    }
+
     private void showPicture(final String imgUrl) {
         Log.d(TAG, "onCreate: Received url: " + mImgUrl);
-        mProgressBar.setVisibility(View.GONE);
+//        mProgressBar.setVisibility(View.GONE);
         mPhotoView.setVisibility(View.VISIBLE);
 
         Glide.with(PreviewActivity.this)
@@ -129,30 +155,30 @@ public class PreviewActivity extends AppCompatActivity {
                 .listener(new RequestListener<String, Bitmap>() {
                     @Override
                     public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
-//                        mProgressBar.setVisibility(View.GONE);
+                        mProgressBar.setVisibility(View.GONE);
 //                        Toast.makeText(PreviewActivity.this, "Unable to load!", Toast.LENGTH_SHORT).show();
 
-                        mWebView.setVisibility(View.VISIBLE);
-                        mProgressBar.setVisibility(View.VISIBLE);
-
-//                        mWebView.getSettings().setJavaScriptEnabled(true);
-                        Log.d(TAG, "onCreate: Received url: " + mImgUrl);
-
-                        mWebView.setWebViewClient(new WebViewClient());
-                        mWebView.getSettings().setDomStorageEnabled(true);
-                        mWebView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
-
-                        mWebView.loadUrl(String.valueOf(imgUrl));
-
-                        mWebView.setHorizontalScrollBarEnabled(false);
-
-                        mWebView.setWebViewClient(new WebViewClient() {
-
-                            @Override
-                            public void onPageCommitVisible(WebView view, String url) {
-                                mProgressBar.setVisibility(View.GONE);
-                            }
-                        });
+//                        mWebView.setVisibility(View.VISIBLE);
+//                        mProgressBar.setVisibility(View.VISIBLE);
+//
+////                        mWebView.getSettings().setJavaScriptEnabled(true);
+//                        Log.d(TAG, "onCreate: Received url: " + mImgUrl);
+//
+//                        mWebView.setWebViewClient(new WebViewClient());
+//                        mWebView.getSettings().setDomStorageEnabled(true);
+//                        mWebView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
+//
+//                        mWebView.loadUrl(String.valueOf(imgUrl));
+//
+//                        mWebView.setHorizontalScrollBarEnabled(false);
+//
+//                        mWebView.setWebViewClient(new WebViewClient() {
+//
+//                            @Override
+//                            public void onPageCommitVisible(WebView view, String url) {
+//                                mProgressBar.setVisibility(View.GONE);
+//                            }
+//                        });
 
                         return false;
                     }
@@ -274,15 +300,10 @@ public class PreviewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: called");
         super.onBackPressed();
         finish();
-
-//        if (mExoplayerView.hasWindowFocus()) {
-//            mExoplayerView.
-//        } else {
-//            finish();
-//
-//        }
+        releasePlayer();
     }
 }
 

@@ -41,6 +41,12 @@ public class ListFragment extends Fragment {
     private int count = 0;
     private ProgressBar mProgressBar;
     private int pageCount = 1;
+    private ViewAdapter viewAdapter;
+
+
+
+    private EndlessRecyclerViewScrollListener scrollListener;
+
 
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -55,6 +61,7 @@ public class ListFragment extends Fragment {
                     setupRecyclerView();
                 }
             } catch (Exception e) {
+                getActivity().setTitle("");
                 Toast.makeText(getContext(), "No results for this search term!", Toast.LENGTH_SHORT).show();
                 Log.e("ListFragment: ", e.getMessage());
             }
@@ -88,10 +95,7 @@ public class ListFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Context context = rootView.getContext();
-
-
         context.registerReceiver(mReceiver, new IntentFilter(RetrofitHelper.DOWNLOAD_COMPLETE));
-
     }
 
     private void setupRecyclerView() {
@@ -99,11 +103,42 @@ public class ListFragment extends Fragment {
 
         RecyclerView itemList = rootView.findViewById(R.id.item_list);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        itemList.setHasFixedSize(true);
         itemList.setLayoutManager(linearLayoutManager);
         itemList.setItemAnimator(new DefaultItemAnimator());
-        itemList.setAdapter(new ViewAdapter(mItemList, getContext()));
 
+        // Adapter settings
+        viewAdapter = new ViewAdapter(mItemList, getContext());
+        itemList.setAdapter(viewAdapter);
+
+//        scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
+//            @Override
+//            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+//                // Triggered only when new data needs to be appended to the list
+//                // Add whatever code is needed to append new items to the bottom of the list
+//                loadNext(page);
+//            }
+//        };
+        // Adds the scroll listener to RecyclerView
+//        itemList.addOnScrollListener(scrollListener);
+
+
+
+
+//        itemList.setAdapter(new ViewAdapter(mItemList, getContext()));
+
+//        itemList.addOnScrollListener(new EndlessRecyclerViewScrollListener() {
+//            @Override
+//            public void onLoadMore() {
+//                loadNext();
+//            }
+//        });
         mProgressBar.setVisibility(View.INVISIBLE);
+//
+
+    }
+
+
 //        final Button next = rootView.findViewById(R.id.next);
 //        final Button prev = rootView.findViewById(R.id.prev);
 
@@ -132,28 +167,33 @@ public class ListFragment extends Fragment {
 //        });
 
 
-        //--------Infinite Scrolling----------
-        itemList.addOnScrollListener(new EndlessRecyclerViewScrollListener(linearLayoutManager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                loadNext();
+    //--------Infinite Scrolling----------
+//        itemList.addOnScrollListener(new EndlessRecyclerViewScrollListener(linearLayoutManager) {
+//            @Override
+//            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+//                loadNext();
+//
+//            }
+//        });
+//
+//
+//    }
 
-            }
-        });
-
-
-    }
-
-    public void loadNext() {
-        pageCount++;
-
-        MainActivity h = (MainActivity) getActivity();
-        int lastChildIndex = mResult.data.children.size() - 1;
-        mHelper.download(h.getQuery(), mResult.data.children.get(lastChildIndex).data.name, true);
-        count += 1;
-        Toast.makeText(getContext(), "Page " + pageCount, Toast.LENGTH_SHORT).show();
-
-    }
+//    public void loadNext(int page) {
+//        pageCount++;
+//
+//        MainActivity h = (MainActivity) getActivity();
+//        int lastChildIndex = mResult.data.children.size() - 1;
+//        String query = mResult.data.children.get(lastChildIndex).data.name;
+//        mHelper.download(h.getQuery(),query, true);
+//        count += 1;
+////        viewAdapter.notifyDataSetChanged();
+//
+//
+//
+//        Toast.makeText(getContext(), "Page " + pageCount, Toast.LENGTH_SHORT).show();
+//
+//    }
 
 
 }

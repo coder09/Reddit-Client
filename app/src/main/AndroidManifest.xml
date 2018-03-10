@@ -27,15 +27,23 @@
         </activity>
         <activity
             android:name=".listings.PreviewActivity"
-            android:parentActivityName=".listings.MainActivity"></activity>
+            android:parentActivityName=".listings.MainActivity" />
 
-        <!--<receiver-->
-        <!--android:name=".ConnectivityReceiver"-->
-        <!--android:enabled="true">-->
-        <!--<intent-filter>-->
-        <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
-        <!--</intent-filter>-->
-        <!--</receiver>-->
+        <!-- <receiver -->
+        <!-- android:name=".ConnectivityReceiver" -->
+        <!-- android:enabled="true"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.net.conn.CONNECTIVITY_CHANGE" /> -->
+        <!-- </intent-filter> -->
+        <!-- </receiver> -->
+        <activity
+            android:name=".listings.WebViewActivity"
+            android:parentActivityName=".listings.MainActivity">
+
+            <meta-data
+                android:name="android.webkit.WebView.EnableSafeBrowsing"
+                android:value="true" />
+        </activity>
     </application>
 
 </manifest>

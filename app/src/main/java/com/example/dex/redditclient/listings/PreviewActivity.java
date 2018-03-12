@@ -1,14 +1,17 @@
 package com.example.dex.redditclient.listings;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,10 +53,11 @@ public class PreviewActivity extends AppCompatActivity {
     private static final String TAG = "PreviewActivity";
     private ProgressBar mProgressBar;
     private PhotoView mPhotoView;
-    private String mImgUrl;
-    private String mId;
+    private String mPostImageUrl;
+    private String mPostId;
     private SimpleExoPlayerView mExoplayerView;
     private SimpleExoPlayer mExoplayer;
+    private ProgressDialog mProgressDialog;
 
 
     @Override
@@ -66,21 +70,27 @@ public class PreviewActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(PreviewActivity.this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 
+
         mPhotoView = findViewById(R.id.photo_view);
         mProgressBar = findViewById(R.id.preview_progressbar);
         mExoplayerView = findViewById(R.id.mExoPlayer);
+        mProgressDialog = new ProgressDialog(this, R.style.MyDialogTheme);
 
         // Getting Intent
         Intent previewIntent = getIntent();
-        mImgUrl = previewIntent.getStringExtra("Url");
-        mId = previewIntent.getStringExtra("mId");
-        String mSubreddit = previewIntent.getStringExtra("Subreddit");
-        getSupportActionBar().setTitle("/r/" + mSubreddit);
 
-        if (isValidImageUrl(mImgUrl)) {
-            showPicture(mImgUrl);
+        mPostImageUrl = previewIntent.getStringExtra("PostUrl");
+        mPostId = previewIntent.getStringExtra("PostId");
+        String mPostTitle = previewIntent.getStringExtra("PostTitle");
+
+        getSupportActionBar().setTitle(mPostTitle);
+
+        if (isValidImageUrl(mPostImageUrl)) {
+            showPicture(mPostImageUrl);
         } else {
-            String mVideoUrl = previewIntent.getStringExtra("mVideoUrl");
+            String mVideoUrl = previewIntent.getStringExtra("PostVideoUrl");
+
+            Log.d(TAG, "onCreate: Video Url: " + mVideoUrl);
             showGif(mVideoUrl);
         }
     }
@@ -126,9 +136,6 @@ public class PreviewActivity extends AppCompatActivity {
     private void releasePlayer() {
         Log.d(TAG, "releasePlayer: called");
         if (mExoplayer != null) {
-//            playbackPosition = player.getCurrentPosition();
-//            currentWindow = player.getCurrentWindowIndex();
-//            playWhenReady = player.getPlayWhenReady();
             mExoplayer.release();
             mExoplayer = null;
         }
@@ -144,10 +151,9 @@ public class PreviewActivity extends AppCompatActivity {
     }
 
     private void showPicture(final String imgUrl) {
-        Log.d(TAG, "onCreate: Received url: " + mImgUrl);
-//        mProgressBar.setVisibility(View.GONE);
-        mPhotoView.setVisibility(View.VISIBLE);
+//        Log.d(TAG, "onCreate: Received url: " + mPostImageUrl);
 
+        mPhotoView.setVisibility(View.VISIBLE);
         Glide.with(PreviewActivity.this)
                 .load(imgUrl)
                 .asBitmap()
@@ -156,30 +162,6 @@ public class PreviewActivity extends AppCompatActivity {
                     @Override
                     public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
                         mProgressBar.setVisibility(View.GONE);
-//                        Toast.makeText(PreviewActivity.this, "Unable to load!", Toast.LENGTH_SHORT).show();
-
-//                        mWebView.setVisibility(View.VISIBLE);
-//                        mProgressBar.setVisibility(View.VISIBLE);
-//
-////                        mWebView.getSettings().setJavaScriptEnabled(true);
-//                        Log.d(TAG, "onCreate: Received url: " + mImgUrl);
-//
-//                        mWebView.setWebViewClient(new WebViewClient());
-//                        mWebView.getSettings().setDomStorageEnabled(true);
-//                        mWebView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
-//
-//                        mWebView.loadUrl(String.valueOf(imgUrl));
-//
-//                        mWebView.setHorizontalScrollBarEnabled(false);
-//
-//                        mWebView.setWebViewClient(new WebViewClient() {
-//
-//                            @Override
-//                            public void onPageCommitVisible(WebView view, String url) {
-//                                mProgressBar.setVisibility(View.GONE);
-//                            }
-//                        });
-
                         return false;
                     }
 
@@ -192,66 +174,31 @@ public class PreviewActivity extends AppCompatActivity {
                 .into(mPhotoView);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        getMenuInflater().inflate(R.menu.menu_preview, menu);
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.action_download:
-                download_image();
-                break;
-
-//            case R.id.action_login:
-//                Intent intent = new Intent(PreviewActivity.this, LoginActivity.class);
-//                startActivity(intent);
-//                break;
-
-            case R.id.home:
-
-                NavUtils.navigateUpFromSameTask(this);
-                finish();
-                return true;
-
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void download_image() {
         Glide.with(PreviewActivity.this)
-                .load(mImgUrl)
+                .load(mPostImageUrl)
                 .asBitmap()
                 .into(new SimpleTarget<Bitmap>() {
                     @Override
                     public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                        mProgressDialog.dismiss();
                         saveImage(resource);
+                    }
+
+                    @Override
+                    public void onLoadStarted(Drawable placeholder) {
+                        super.onLoadStarted(placeholder);
+                        mProgressDialog.setMessage(Html.fromHtml("<font color='#FFFFFF'>Downloading Image</font>"));
+                        mProgressDialog.show();
                     }
                 });
     }
 
     private String saveImage(Bitmap image) {
-        Log.d(TAG, "saveImage: called");
+//        Log.d(TAG, "saveImage: called");
         String savedImagePath = null;
         String imageFileName = "";
-        imageFileName = mId + ".jpg";
-
-//        if (matcher1.matches()) {
-//            imageFileName = post_id + ".jpg";
-//            Log.d(TAG, "saveImage: jpg called");
-//        }
-//        else {
-//           // imageFileName = post_id + ".gif";
-//            Log.d(TAG, "saveImage: gif called");
-//
-//        }
+        imageFileName = mPostId + ".jpg";
 
         String folderName = "/RedditClient";
 
@@ -304,6 +251,32 @@ public class PreviewActivity extends AppCompatActivity {
         super.onBackPressed();
         finish();
         releasePlayer();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.menu_preview, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_download:
+                download_image();
+                break;
+
+            case R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
 

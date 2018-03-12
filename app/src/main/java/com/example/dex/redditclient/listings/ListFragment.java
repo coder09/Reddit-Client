@@ -27,11 +27,11 @@ import java.util.List;
 
 /**
  * Created by dex on 2/2/18.
- * <p>
- * A fragment to hold the ListView (RecyclerView) of the listings.
+ * * A fragment to hold the ListView (RecyclerView) of the listings.
  */
 
 public class ListFragment extends Fragment {
+    private static final String TAG = "ListFragment";
 
     List<LChild> mItemList;
     Context mContext;
@@ -41,8 +41,10 @@ public class ListFragment extends Fragment {
     private int count = 0;
     private ProgressBar mProgressBar;
     private int pageCount = 1;
-    private ViewAdapter viewAdapter;
 
+    private ViewAdapter viewAdapter;
+    private RecyclerView itemList;
+    private LinearLayoutManager linearLayoutManager;
 
 
     private EndlessRecyclerViewScrollListener scrollListener;
@@ -79,16 +81,19 @@ public class ListFragment extends Fragment {
         return fragment;
     }
 
+    private void newDataRecyclerView() {
+        viewAdapter = new ViewAdapter(mItemList, getContext());
+        itemList.setAdapter(viewAdapter);
+        viewAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_home, container, false);
         mHelper = ((MainActivity) getActivity()).getHelper();
         mProgressBar = rootView.findViewById(R.id.fragment_progressbar);
-
-//        mProgressBar.setVisibility(View.VISIBLE);
         return rootView;
-
     }
 
     @Override
@@ -100,9 +105,8 @@ public class ListFragment extends Fragment {
 
     private void setupRecyclerView() {
         mProgressBar.setVisibility(View.VISIBLE);
-
-        RecyclerView itemList = rootView.findViewById(R.id.item_list);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        itemList = rootView.findViewById(R.id.item_list);
+        linearLayoutManager = new LinearLayoutManager(getContext());
         itemList.setHasFixedSize(true);
         itemList.setLayoutManager(linearLayoutManager);
         itemList.setItemAnimator(new DefaultItemAnimator());
@@ -111,31 +115,14 @@ public class ListFragment extends Fragment {
         viewAdapter = new ViewAdapter(mItemList, getContext());
         itemList.setAdapter(viewAdapter);
 
-//        scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
-//            @Override
-//            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-//                // Triggered only when new data needs to be appended to the list
-//                // Add whatever code is needed to append new items to the bottom of the list
-//                loadNext(page);
-//            }
-//        };
-        // Adds the scroll listener to RecyclerView
-//        itemList.addOnScrollListener(scrollListener);
-
-
-
-
-//        itemList.setAdapter(new ViewAdapter(mItemList, getContext()));
-
-//        itemList.addOnScrollListener(new EndlessRecyclerViewScrollListener() {
-//            @Override
-//            public void onLoadMore() {
-//                loadNext();
-//            }
-//        });
+        scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                loadNext(page);
+            }
+        };
+        itemList.addOnScrollListener(scrollListener);
         mProgressBar.setVisibility(View.INVISIBLE);
-//
-
     }
 
 
@@ -166,36 +153,19 @@ public class ListFragment extends Fragment {
 //            }
 //        });
 
+    public void loadNext(int page) {
+        pageCount++;
 
-    //--------Infinite Scrolling----------
-//        itemList.addOnScrollListener(new EndlessRecyclerViewScrollListener(linearLayoutManager) {
-//            @Override
-//            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-//                loadNext();
-//
-//            }
-//        });
-//
-//
-//    }
-
-//    public void loadNext(int page) {
-//        pageCount++;
-//
-//        MainActivity h = (MainActivity) getActivity();
-//        int lastChildIndex = mResult.data.children.size() - 1;
-//        String query = mResult.data.children.get(lastChildIndex).data.name;
-//        mHelper.download(h.getQuery(),query, true);
+        MainActivity h = (MainActivity) getActivity();
+        int lastChildIndex = mResult.data.children.size() - 1;
+        String newQuery = mResult.data.children.get(lastChildIndex).data.name;
+        mHelper.download(h.getQuery(), newQuery, true);
+        count += 1;
 //        count += 1;
-////        viewAdapter.notifyDataSetChanged();
-//
-//
-//
-//        Toast.makeText(getContext(), "Page " + pageCount, Toast.LENGTH_SHORT).show();
-//
-//    }
+//        viewAdapter.notifyDataSetChanged();
+        Toast.makeText(getContext(), "Page " + pageCount, Toast.LENGTH_SHORT).show();
 
-
+    }
 }
 
 

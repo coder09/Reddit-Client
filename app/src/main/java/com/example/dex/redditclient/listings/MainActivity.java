@@ -324,8 +324,8 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_refresh) {
 //            Toast.makeText(this, "Refresh Clicked", Toast.LENGTH_SHORT).show();
             Snackbar snackbar = Snackbar.make(coordinatorLayout, "Page Refresh", Snackbar.LENGTH_LONG);
-
             snackbar.show();
+
             downloadPost(currentFeed);
 
         }

@@ -3,7 +3,6 @@ package com.example.dex.redditclient.listings.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.widget.RecyclerView;
@@ -65,9 +64,12 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
             String postCreatedTime = GetTimeAgo.getTimeAgo(postTime, mContext);
             holder.mPostTime.setText(postCreatedTime);
 
+            final String mPostId = holder.mItem.data.id;
 
-            final String mTitle = holder.mItem.data.title;
-            holder.mPostTitle.setText(mTitle);
+
+            final String mPostTitle = holder.mItem.data.title;
+            holder.mPostTitle.setText(mPostTitle);
+
             final String mThumbnail = holder.mItem.data.thumbnail;
             final String mUrl = holder.mItem.data.url;
 
@@ -81,7 +83,7 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
+//                        holder.mPostTitle.setTextColor(Color.parseColor("#8BC34A"));
                         Context context = v.getContext();
                         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
                         CustomTabsIntent customTabsIntent = builder.build();
@@ -101,7 +103,7 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                 final String resultImageUrl = mImageUrl.replace("&amp;", "&");
 
                 holder.mProgressBar.setVisibility(View.VISIBLE);
-                holder.mErrorThumbnail.setVisibility(View.GONE);
+//                holder.mErrorThumbnail.setVisibility(View.GONE);
                 holder.mPostThumbnail.setVisibility(View.VISIBLE);
 
                 Glide.with(mContext)
@@ -127,36 +129,29 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        holder.mPostTitle.setTextColor(Color.parseColor("#AEEA00"));
+//                        holder.mPostTitle.setTextColor(Color.parseColor("#AEEA00"));
                         Context context = v.getContext();
                         Intent previewIntent = new Intent(context, PreviewActivity.class);
 //                        previewIntent.putExtra("mVideoUrl", mVideoUrl);
 //                        previewIntent.putExtra("mId", id);
-                        previewIntent.putExtra("Url", resultImageUrl);
-                        previewIntent.putExtra("Subreddit", holder.mItem.data.subreddit);
+                        previewIntent.putExtra("PostUrl", resultImageUrl);
+                        previewIntent.putExtra("PostTitle", mPostTitle);
+                        previewIntent.putExtra("PostId", mPostId);
                         context.startActivity(previewIntent);
                     }
                 });
             }
 
             try {
-//                Log.d(TAG, "onBindViewHolder: video block called");
-                final String id = holder.mItem.data.id;
-
                 final String mVideoUrl = holder.mItem.data.preview.reddit_video_preview.fallback_url;
-
-//                final boolean isGif = holder.mItem.data.preview.reddit_video_preview.is_gif;
-
-//                if (isGif) {
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        holder.mPostTitle.setTextColor(Color.parseColor("#AEEA00"));
                         Context context = v.getContext();
                         Intent previewIntent = new Intent(context, PreviewActivity.class);
-                        previewIntent.putExtra("mVideoUrl", mVideoUrl);
-                        previewIntent.putExtra("mId", id);
-                        previewIntent.putExtra("mSubreddit", holder.mItem.data.subreddit);
+                        previewIntent.putExtra("PostVideoUrl", mVideoUrl);
+                        previewIntent.putExtra("PostTitle", mPostTitle);
+                        previewIntent.putExtra("Subreddit", holder.mItem.data.subreddit);
                         context.startActivity(previewIntent);
                     }
                 });
@@ -176,7 +171,6 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
     public int getItemCount() {
         return mValues.size();
     }
-
 
 
     class ViewHolder extends RecyclerView.ViewHolder {

@@ -87,7 +87,6 @@ public class ViewAdapter extends RecyclerView.Adapter<ViewAdapter.ViewHolder> {
                         Context context = v.getContext();
                         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
                         CustomTabsIntent customTabsIntent = builder.build();
-                        customTabsIntent.intent.setPackage("com.android.chrome");
                         customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         customTabsIntent.launchUrl(context, Uri.parse(mUrl));
                     }
